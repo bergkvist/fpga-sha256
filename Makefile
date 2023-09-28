@@ -8,3 +8,6 @@ sha256_tb.vvp: sha256_tb.sv sha256.sv
 
 watch:
 	ls *.sv | entr -csr "make test"
+
+clean:
+	rm *.vvp
