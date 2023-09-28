@@ -1,10 +1,10 @@
-`define rtor32(x, S) ((x >> S) | (x << (32 - S)))
+`define rotr32(x, S) ((x >> S) | (x << (32 - S)))
 `define maj(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
 `define ch(x, y, z)  (((x) & (y)) ^ (~(x) & (z)))
-`define sigma0(x) (`rtor32(x,  7) ^ `rtor32(x, 18) ^ (x >> 3))
-`define sigma1(x) (`rtor32(x, 17) ^ `rtor32(x, 19) ^ (x >> 10))
-`define Sigma0(x) (`rtor32(x,  2) ^ `rtor32(x, 13) ^ `rtor32(x, 22))
-`define Sigma1(x) (`rtor32(x,  6) ^ `rtor32(x, 11) ^ `rtor32(x, 25))
+`define sigma0(x) (`rotr32(x,  7) ^ `rotr32(x, 18) ^ (x >> 3))
+`define sigma1(x) (`rotr32(x, 17) ^ `rotr32(x, 19) ^ (x >> 10))
+`define Sigma0(x) (`rotr32(x,  2) ^ `rotr32(x, 13) ^ `rotr32(x, 22))
+`define Sigma1(x) (`rotr32(x,  6) ^ `rotr32(x, 11) ^ `rotr32(x, 25))
 
 module sha256(
     input logic [511:0] message,
