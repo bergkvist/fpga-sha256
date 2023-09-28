@@ -22,7 +22,7 @@ module sha256(
         32'h748f82ee, 32'h78a5636f, 32'h84c87814, 32'h8cc70208, 32'h90befffa, 32'ha4506ceb, 32'hbef9a3f7, 32'hc67178f2
     };
     logic [2079:0] a, b, c, d, e, f, g, h;
-    logic [2047:0] schedule, t1;
+    logic [2047:0] schedule, t;
 
     assign digest[255 -:32] = a[2079-:32] + a[0 +:32];
     assign digest[223 -:32] = b[2079-:32] + b[0 +:32];
@@ -34,56 +34,33 @@ module sha256(
     assign digest[ 31 -:32] = h[2079-:32] + h[0 +:32];
 
     // Initial state
-    assign a[2079-:32] = 32'h6a09e667;
-    assign b[2079-:32] = 32'hbb67ae85;
-    assign c[2079-:32] = 32'h3c6ef372;
-    assign d[2079-:32] = 32'ha54ff53a;
-    assign e[2079-:32] = 32'h510e527f;
-    assign f[2079-:32] = 32'h9b05688c;
-    assign g[2079-:32] = 32'h1f83d9ab;
-    assign h[2079-:32] = 32'h5be0cd19;
+    assign a[2079 -:32] = 32'h6a09e667;
+    assign b[2079 -:32] = 32'hbb67ae85;
+    assign c[2079 -:32] = 32'h3c6ef372;
+    assign d[2079 -:32] = 32'ha54ff53a;
+    assign e[2079 -:32] = 32'h510e527f;
+    assign f[2079 -:32] = 32'h9b05688c;
+    assign g[2079 -:32] = 32'h1f83d9ab;
+    assign h[2079 -:32] = 32'h5be0cd19;
     assign schedule[2047 -:512] = message[511:0];
     
-    generate for (i = 0; i < 64; i++)
-        assign a[2047-32*i -:32] = t1[2047-32*i -:32] + `Sigma0(a[2079-32*i -:32]) + `maj(a[2079-32*i -:32], b[2079-32*i -:32], c[2079-32*i -:32]);
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
+    generate
+    for (i = 0; i < 64; i++) begin
+        assign a[2047-32*i -:32] = t[2047-32*i -:32] + `Sigma0(a[2079-32*i -:32]) + `maj(a[2079-32*i -:32], b[2079-32*i -:32], c[2079-32*i -:32]);
         assign b[2047-32*i -:32] = a[2079-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
         assign c[2047-32*i -:32] = b[2079-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
         assign d[2047-32*i -:32] = c[2079-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
-        assign e[2047-32*i -:32] = d[2079-32*i -:32] + t1[2047-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
+        assign e[2047-32*i -:32] = d[2079-32*i -:32] + t[2047-32*i -:32];
         assign f[2047-32*i -:32] = e[2079-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
         assign g[2047-32*i -:32] = f[2079-32*i -:32];
-    endgenerate
-
-    generate for (i = 0; i < 64; i++)
         assign h[2047-32*i -:32] = g[2079-32*i -:32];
-    endgenerate
+        assign t[2047-32*i -:32] = h[2079-32*i -:32] + `Sigma1(e[2079-32*i -:32]) + `ch(e[2079-32*i -:32], f[2079-32*i -:32], g[2079-32*i -:32]) +
+                                    K256[2047-32*i -:32] + schedule[2047-32*i -:32];
+    end
 
-    generate for (i = 0; i < 64; i++)
-        assign t1[2047-32*i -:32] = (h[2079-32*i -:32] + `Sigma1(e[2079-32*i -:32]) + `ch(e[2079-32*i -:32], f[2079-32*i -:32], g[2079-32*i -:32]) +
-                                     K256[2047-32*i -:32] + schedule[2047-32*i -:32]);
+    for (i = 16; i < 64; i++) begin
+        assign schedule[2047 - 32*i -:32] = `sigma1(schedule[2047 - 32*(i- 2) -:32]) + schedule[2047 - 32*(i- 7) -:32] +
+                                            `sigma0(schedule[2047 - 32*(i-15) -:32]) + schedule[2047 - 32*(i-16) -:32];
+    end
     endgenerate
-
-    generate for (i = 16; i < 64; i++)
-        assign schedule[2047 - 32*i -:32] = (`sigma1(schedule[2047 - 32*(i- 2) -:32]) + schedule[2047 - 32*(i- 7) -:32] +
-                                             `sigma0(schedule[2047 - 32*(i-15) -:32]) + schedule[2047 - 32*(i-16) -:32]);
-    endgenerate
-
 endmodule
